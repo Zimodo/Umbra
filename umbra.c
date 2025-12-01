@@ -6,8 +6,34 @@ void drawEarthAndMoon();
 const int screenWidth = 800;
 const int screenHeight = 800;
 float theta = 0;
-Vector2 earthPosition = { (float)screenWidth/2, (float)screenHeight/2 };
 
+int main(){
+    
+    SetTargetFPS(60);
+
+    InitWindow(screenWidth, screenHeight, "UMBRA");
+    
+    // Main game loop
+    while (!WindowShouldClose())    // Detect window close button or ESC key
+    {
+        struct earth{
+            Vector2 position = { (float)screenWidth/2, (float)screenHeight/2 };
+        };
+        
+        struct moon{
+            float theta;
+            float offset;
+            Vector2 position;
+        };
+            
+        drawEarthAndMoon();
+        
+    }
+
+    CloseWindow();
+
+    return 0;
+}
 
 void drawEarthAndMoon(){
     
@@ -75,23 +101,4 @@ void drawEarthAndMoon(){
         // Draw Moon
         DrawCircleV(moonPosition, 20, GRAY);
     EndDrawing();
-}
-
-int main(){
-    
-    SetTargetFPS(60);
-
-    InitWindow(screenWidth, screenHeight, "UMBRA");
-    
-    // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
-    {
-
-        drawEarthAndMoon();
-        
-    }
-
-    CloseWindow();
-
-    return 0;
 }
