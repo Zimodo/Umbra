@@ -1,11 +1,9 @@
 #include "raylib.h"
 #include <math.h>
 
-
-
 const int screenWidth = 800;
 const int screenHeight = 800;
-float theta = 0;
+
 struct Earth{
     float posX;// = screenWidth/2;
     float posY;// = screenHeight/2;
@@ -17,9 +15,8 @@ struct Moon{
     float offset;
     float theta;
 };
+
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
-
-
 
 int main(){
     
@@ -81,16 +78,16 @@ void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
             
             if (rightStickX > 0){
          
-            theta = atan( rightStickY/rightStickX );
+            moon->theta = atan( rightStickY/rightStickX );
          
             } else {
             
-            theta = atan( rightStickY/rightStickX ) + PI;
+            moon->theta = atan( rightStickY/rightStickX ) + PI;
             
             }
         }   
         
-        Vector2 moonOffset = { cos(theta)*100, sin(theta)*100 };
+        Vector2 moonOffset = { cos(moon->theta)*100, sin(moon->theta)*100 };
         Vector2 moonPosition = { earth->posX + moonOffset.x, earth->posY + moonOffset.y };
 
         // ----------
@@ -99,7 +96,7 @@ void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
 
         DrawFPS(10,10);
         
-        DrawText(TextFormat("Theta: %f", theta), 200, 80, 20, RED);
+        DrawText(TextFormat("Theta: %f", moon->theta), 200, 80, 20, RED);
 
         // -------
         // Visuals
