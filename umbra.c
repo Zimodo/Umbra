@@ -1,11 +1,25 @@
 #include "raylib.h"
 #include <math.h>
 
-void drawEarthAndMoon();
+
 
 const int screenWidth = 800;
 const int screenHeight = 800;
 float theta = 0;
+struct Earth{
+    float posX;// = screenWidth/2;
+    float posY;// = screenHeight/2;
+};
+
+struct Moon{
+    float posX;
+    float posY;
+    float offset;
+    float theta;
+};
+void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
+
+
 
 int main(){
     
@@ -13,20 +27,18 @@ int main(){
 
     InitWindow(screenWidth, screenHeight, "UMBRA");
     
+    struct Earth earth;
+    struct Moon moon;
+
+    // init structs
+    earth.posX = screenWidth/2;
+    earth.posY = screenHeight/2;
+    
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        struct earth{
-            Vector2 position = { (float)screenWidth/2, (float)screenHeight/2 };
-        };
         
-        struct moon{
-            float theta;
-            float offset;
-            Vector2 position;
-        };
-            
-        drawEarthAndMoon();
+        drawEarthAndMoon(&earth, &moon); // pass by reference using pointers
         
     }
 
@@ -35,7 +47,7 @@ int main(){
     return 0;
 }
 
-void drawEarthAndMoon(){
+void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
     
     const float leftStickDeadzoneX = 0.1f;
     const float leftStickDeadzoneY = 0.1f;
@@ -55,8 +67,8 @@ void drawEarthAndMoon(){
         if (leftStickX > -leftStickDeadzoneX && leftStickX < leftStickDeadzoneX) leftStickX = 0.0f;
         if (leftStickY > -leftStickDeadzoneY && leftStickY < leftStickDeadzoneY) leftStickY = 0.0f; 
 
-        earthPosition.x += leftStickX*200*GetFrameTime();
-        earthPosition.y += leftStickY*200*GetFrameTime();
+        earth->posX += leftStickX*200*GetFrameTime();
+        earth->posY += leftStickY*200*GetFrameTime();
 
         // Moon
         
@@ -79,7 +91,7 @@ void drawEarthAndMoon(){
         }   
         
         Vector2 moonOffset = { cos(theta)*100, sin(theta)*100 };
-        Vector2 moonPosition = { earthPosition.x + moonOffset.x, earthPosition.y + moonOffset.y };
+        Vector2 moonPosition = { earth->posX + moonOffset.x, earth->posY + moonOffset.y };
 
         // ----------
         // Debug text
@@ -96,7 +108,8 @@ void drawEarthAndMoon(){
         ClearBackground(BLACK);
         
         // Draw Earth
-        DrawCircleV(earthPosition, 50, BLUE);
+        Vector2 earthPosVector = {earth->posX, earth->posY};
+        DrawCircleV(earthPosVector, 50, BLUE);
         
         // Draw Moon
         DrawCircleV(moonPosition, 20, GRAY);
