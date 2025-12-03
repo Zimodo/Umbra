@@ -18,8 +18,43 @@ struct Moon{
     int orbit;
 };
 
+// this struct is broken rn
+/*
+umbra.c:138:1: error: number of arguments doesn't match prototype
+  138 | void updateBulletSpawner(){
+      | ^~~~
+umbra.c:37:6: error: prototype declaration
+   37 | void updateBulletSpawner(struct Spawner* spawner);
+      |      ^~~~~~~~~~~~~~~~~~~
+umbra.c:142:12: error: 'spawner' undeclared (first use in this function); did you mean 'Spawner'?
+  142 |     switch(spawner.side){
+      |            ^~~~~~~
+      |            Spawner
+umbra.c:142:12: note: each undeclared identifier is reported only once for each function it appears in
+umbra.c:146:13: error: 'pos' undeclared (first use in this function); did you mean 'pow'?
+  146 |             pos.x = pos.x + speed.x;
+      |             ^~~
+      |             pow
+*/
+
+struct Spawner{
+    Vector2 pos;
+    int side;
+};
+
+/*
+typedef struct Bullet {
+    Vector2 position;       // Bullet position on screen
+    Vector2 acceleration;   // Amount of pixels to be incremented to position every frame
+    bool disabled;          // Skip processing and draw case out of screen
+    Color color;            // Bullet color
+} Bullet;
+*/
+
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void updateEarthAndMoon(struct Earth* earth, struct Moon* moon);
+void updateBulletSpawner(struct Spawner* spawner);
+void updateBullets();
 
 int main(){
     
@@ -29,6 +64,7 @@ int main(){
     
     struct Earth earth;
     struct Moon moon;
+    struct Spawner spawner;
 
     // Init Earth and Moon
     earth.pos.x = screenWidth/2;
@@ -38,16 +74,24 @@ int main(){
     moon.radius = 20;
     moon.orbit = 100;
     
+    // Init Spawner
+    spawner.pos.x = screenWidth + 200.0;
+    spawner.pos.y = screenHeight + 200.0;
+    spawner.side = 1;
+    
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         updateEarthAndMoon(&earth, &moon);
+        void updateBullets();
         
         BeginDrawing();
         
-        ClearBackground(BLACK);
-        drawEarthAndMoon(&earth, &moon); // pass by reference using pointers
-        
+            ClearBackground(BLACK);
+            drawEarthAndMoon(&earth, &moon); // pass by reference using pointers
+            
+            updateBulletSpawner(&spawner); // take out of drawing phase later
+
         EndDrawing();
     }
 
@@ -107,6 +151,45 @@ void updateEarthAndMoon(struct Earth* earth, struct Moon* moon){
     
     moon->pos.x = earth->pos.x + cos(moon->theta)*moon->orbit;
     moon->pos.y = earth->pos.y + sin(moon->theta)*moon->orbit;
+}
+
+
+void updateBulletSpawner(){
+    
+    float carry;
+    
+    switch(spawner.side){
+        case 1:
+            
+            Vector2 speed = { 3.0f, 0.0f };
+            pos.x = pos.x + speed.x;
+            pos.y = pos.y + speed.y;
+            
+            if (pos.x > 600.0) {
+                spawner->side++;
+                carry = pos.x - 600.0;
+                pos.x = 600.0;
+                pos.y = 200.0 + carry;
+            }
+            
+            // hi :)
+            break;
+        case 2:
+            // hi :)
+            break;
+        case 3:
+            // hi :)
+            break;
+        case 4:
+            // hi :)
+            break;
+    }
+    
+    DrawCircle(pos.x,pos.y,20,WHITE);
+}
+
+void updateBullets(){
+    
 }
 
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
