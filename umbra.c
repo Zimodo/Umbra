@@ -5,8 +5,9 @@ const int screenWidth = 800;
 const int screenHeight = 800;
 
 struct Earth{
-    float posX;// = screenWidth/2;
-    float posY;// = screenHeight/2;
+    float posX;
+    float posY;
+    int radius;
 };
 
 struct Moon{
@@ -14,9 +15,11 @@ struct Moon{
     float posY;
     float offset;
     float theta;
+    int radius;
 };
 
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
+void updateEarthAndMoon(struct Earth* earth, struct Moon* moon);
 
 int main(){
     
@@ -30,11 +33,13 @@ int main(){
     // init structs
     earth.posX = screenWidth/2;
     earth.posY = screenHeight/2;
+    earth.radius = 50;
+    moon.radius = 20;
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        
+        updateEarthAndMoon(&earth, &moon);
         drawEarthAndMoon(&earth, &moon); // pass by reference using pointers
         
     }
@@ -44,51 +49,55 @@ int main(){
     return 0;
 }
 
-void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
+void updateEarthAndMoon(struct Earth* earth, struct Moon* moon){
     
     const float leftStickDeadzoneX = 0.1f;
     const float leftStickDeadzoneY = 0.1f;
     const float rightStickDeadzoneX = 0.1f;
     const float rightStickDeadzoneY = 0.1f;
     
+    // ------------
+    // Calculations
+    // ------------
+    
+    // Earth
+    
+    float leftStickX = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X);
+    float leftStickY = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y);
+    
+    if (leftStickX > -leftStickDeadzoneX && leftStickX < leftStickDeadzoneX) leftStickX = 0.0f;
+    if (leftStickY > -leftStickDeadzoneY && leftStickY < leftStickDeadzoneY) leftStickY = 0.0f; 
+
+    earth->posX += leftStickX*200*GetFrameTime();
+    earth->posY += leftStickY*200*GetFrameTime();
+
+    // Moon
+    
+    float rightStickX = GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_X);
+    float rightStickY = GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_Y);
+    
+    // Calculate angle
+    
+    if (!(rightStickX > -rightStickDeadzoneX && rightStickX < rightStickDeadzoneX && rightStickY > -rightStickDeadzoneY && rightStickY < rightStickDeadzoneY)){
+        
+        if (rightStickX > 0){
+     
+        moon->theta = atan( rightStickY/rightStickX );
+     
+        } else {
+        
+        moon->theta = atan( rightStickY/rightStickX ) + PI;
+        
+        }
+    }   
+    
+    //Vector2 moonOffset = { cos(moon->theta)*100, sin(moon->theta)*100 };
+    moon->posX = earth->posX + cos(moon->theta)*100;
+    moon->posY = earth->posY + sin(moon->theta)*100;
+}
+
+void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
     BeginDrawing();
-        // ------------
-        // Calculations
-        // ------------
-        
-        // Earth
-        
-        float leftStickX = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X);
-        float leftStickY = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y);
-        
-        if (leftStickX > -leftStickDeadzoneX && leftStickX < leftStickDeadzoneX) leftStickX = 0.0f;
-        if (leftStickY > -leftStickDeadzoneY && leftStickY < leftStickDeadzoneY) leftStickY = 0.0f; 
-
-        earth->posX += leftStickX*200*GetFrameTime();
-        earth->posY += leftStickY*200*GetFrameTime();
-
-        // Moon
-        
-        float rightStickX = GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_X);
-        float rightStickY = GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_Y);
-        
-        // Calculate angle
-        
-        if (!(rightStickX > -rightStickDeadzoneX && rightStickX < rightStickDeadzoneX && rightStickY > -rightStickDeadzoneY && rightStickY < rightStickDeadzoneY)){
-            
-            if (rightStickX > 0){
-         
-            moon->theta = atan( rightStickY/rightStickX );
-         
-            } else {
-            
-            moon->theta = atan( rightStickY/rightStickX ) + PI;
-            
-            }
-        }   
-        
-        Vector2 moonOffset = { cos(moon->theta)*100, sin(moon->theta)*100 };
-        Vector2 moonPosition = { earth->posX + moonOffset.x, earth->posY + moonOffset.y };
 
         // ----------
         // Debug text
@@ -106,9 +115,11 @@ void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
         
         // Draw Earth
         Vector2 earthPosVector = {earth->posX, earth->posY};
-        DrawCircleV(earthPosVector, 50, BLUE);
+        DrawCircleV(earthPosVector, earth->radius, BLUE);
         
         // Draw Moon
-        DrawCircleV(moonPosition, 20, GRAY);
+        Vector2 moonPosVector = {moon->posX, moon->posY};
+        DrawCircleV(moonPosVector, moon->radius, GRAY);
+        
     EndDrawing();
 }
