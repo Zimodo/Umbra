@@ -6,6 +6,7 @@ const int screenHeight = 800;
 
 struct Earth{
     Vector2 pos;
+    int speed;
     int radius;
 };
 
@@ -14,6 +15,7 @@ struct Moon{
     float offset;
     float theta;
     int radius;
+    int orbit;
 };
 
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
@@ -28,11 +30,13 @@ int main(){
     struct Earth earth;
     struct Moon moon;
 
-    // init structs
+    // Init Earth and Moon
     earth.pos.x = screenWidth/2;
     earth.pos.y = screenHeight/2;
     earth.radius = 50;
+    earth.speed = 200;
     moon.radius = 20;
+    moon.orbit = 100;
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -71,8 +75,8 @@ void updateEarthAndMoon(struct Earth* earth, struct Moon* moon){
     if (leftStickX > -leftStickDeadzoneX && leftStickX < leftStickDeadzoneX) leftStickX = 0.0f;
     if (leftStickY > -leftStickDeadzoneY && leftStickY < leftStickDeadzoneY) leftStickY = 0.0f; 
 
-    earth->pos.x += leftStickX*200*GetFrameTime();
-    earth->pos.y += leftStickY*200*GetFrameTime();
+    earth->pos.x += leftStickX*earth->speed*GetFrameTime();
+    earth->pos.y += leftStickY*earth->speed*GetFrameTime();
     
     // Screen edge collision
     
@@ -101,8 +105,8 @@ void updateEarthAndMoon(struct Earth* earth, struct Moon* moon){
         }
     }   
     
-    moon->pos.x = earth->pos.x + cos(moon->theta)*100;
-    moon->pos.y = earth->pos.y + sin(moon->theta)*100;
+    moon->pos.x = earth->pos.x + cos(moon->theta)*moon->orbit;
+    moon->pos.y = earth->pos.y + sin(moon->theta)*moon->orbit;
 }
 
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
@@ -113,9 +117,9 @@ void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
 
     DrawFPS(10,10);
     
-    DrawText(TextFormat("Theta: %f", moon->theta), 200, 80, 20, RED);
-    DrawText(TextFormat("Earth posX: %f", earth->pos.x), 200, 100, 20, RED);
-    DrawText(TextFormat("Earth posY: %f", earth->pos.y), 200, 120, 20, RED);
+    //DrawText(TextFormat("Theta: %f", moon->theta), 200, 80, 20, RED);
+    //DrawText(TextFormat("Earth posX: %f", earth->pos.x), 200, 100, 20, RED);
+    //DrawText(TextFormat("Earth posY: %f", earth->pos.y), 200, 120, 20, RED);
 
     // -------
     // Visuals
