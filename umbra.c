@@ -76,6 +76,8 @@ void updateEarthAndMoon(struct Earth* earth, struct Moon* moon){
     earth->posX += leftStickX*200*GetFrameTime();
     earth->posY += leftStickY*200*GetFrameTime();
     
+    // Screen edge collision
+    
     if (earth->posX > screenWidth - earth->radius) earth->posX = screenWidth - earth->radius;
     if (earth->posY > screenHeight - earth->radius) earth->posY = screenHeight - earth->radius;
     if (earth->posX < earth->radius) earth->posX = earth->radius;
