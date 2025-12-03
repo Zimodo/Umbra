@@ -40,8 +40,13 @@ int main(){
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         updateEarthAndMoon(&earth, &moon);
+        
+        BeginDrawing();
+        
+        ClearBackground(BLACK);
         drawEarthAndMoon(&earth, &moon); // pass by reference using pointers
         
+        EndDrawing();
     }
 
     CloseWindow();
@@ -70,6 +75,11 @@ void updateEarthAndMoon(struct Earth* earth, struct Moon* moon){
 
     earth->posX += leftStickX*200*GetFrameTime();
     earth->posY += leftStickY*200*GetFrameTime();
+    
+    if (earth->posX > screenWidth - earth->radius) earth->posX = screenWidth - earth->radius;
+    if (earth->posY > screenHeight - earth->radius) earth->posY = screenHeight - earth->radius;
+    if (earth->posX < earth->radius) earth->posX = earth->radius;
+    if (earth->posY < earth->radius) earth->posY = earth->radius;
 
     // Moon
     
@@ -91,35 +101,31 @@ void updateEarthAndMoon(struct Earth* earth, struct Moon* moon){
         }
     }   
     
-    //Vector2 moonOffset = { cos(moon->theta)*100, sin(moon->theta)*100 };
     moon->posX = earth->posX + cos(moon->theta)*100;
     moon->posY = earth->posY + sin(moon->theta)*100;
 }
 
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
-    BeginDrawing();
 
-        // ----------
-        // Debug text
-        // ----------
+    // ----------
+    // Debug text
+    // ----------
 
-        DrawFPS(10,10);
-        
-        DrawText(TextFormat("Theta: %f", moon->theta), 200, 80, 20, RED);
+    DrawFPS(10,10);
+    
+    DrawText(TextFormat("Theta: %f", moon->theta), 200, 80, 20, RED);
+    DrawText(TextFormat("Earth posX: %f", earth->posX), 200, 100, 20, RED);
+    DrawText(TextFormat("Earth posY: %f", earth->posY), 200, 120, 20, RED);
 
-        // -------
-        // Visuals
-        // -------
-        
-        ClearBackground(BLACK);
-        
-        // Draw Earth
-        Vector2 earthPosVector = {earth->posX, earth->posY};
-        DrawCircleV(earthPosVector, earth->radius, BLUE);
-        
-        // Draw Moon
-        Vector2 moonPosVector = {moon->posX, moon->posY};
-        DrawCircleV(moonPosVector, moon->radius, GRAY);
-        
-    EndDrawing();
+    // -------
+    // Visuals
+    // -------
+    
+    // Draw Earth
+    Vector2 earthPosVector = {earth->posX, earth->posY};
+    DrawCircleV(earthPosVector, earth->radius, BLUE);
+    
+    // Draw Moon
+    Vector2 moonPosVector = {moon->posX, moon->posY};
+    DrawCircleV(moonPosVector, moon->radius, GRAY);
 }
