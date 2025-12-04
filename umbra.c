@@ -18,28 +18,10 @@ struct Moon{
     int orbit;
 };
 
-// this struct is broken rn
-/*
-umbra.c:138:1: error: number of arguments doesn't match prototype
-  138 | void updateBulletSpawner(){
-      | ^~~~
-umbra.c:37:6: error: prototype declaration
-   37 | void updateBulletSpawner(struct Spawner* spawner);
-      |      ^~~~~~~~~~~~~~~~~~~
-umbra.c:142:12: error: 'spawner' undeclared (first use in this function); did you mean 'Spawner'?
-  142 |     switch(spawner.side){
-      |            ^~~~~~~
-      |            Spawner
-umbra.c:142:12: note: each undeclared identifier is reported only once for each function it appears in
-umbra.c:146:13: error: 'pos' undeclared (first use in this function); did you mean 'pow'?
-  146 |             pos.x = pos.x + speed.x;
-      |             ^~~
-      |             pow
-*/
-
 struct Spawner{
     Vector2 pos;
     int side;
+    Vector2 accel;
 };
 
 /*
@@ -75,9 +57,11 @@ int main(){
     moon.orbit = 100;
     
     // Init Spawner
-    spawner.pos.x = screenWidth + 200.0;
-    spawner.pos.y = screenHeight + 200.0;
+    spawner.pos.x = 200.0;
+    spawner.pos.y = 200.0;
     spawner.side = 1;
+    spawner.accel.x = 3.0f;
+    spawner.accel.y = 0.0f;
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -154,38 +138,57 @@ void updateEarthAndMoon(struct Earth* earth, struct Moon* moon){
 }
 
 
-void updateBulletSpawner(){
+void updateBulletSpawner(struct Spawner* spawner){
     
     float carry;
     
-    switch(spawner.side){
+    spawner->pos.x = spawner->pos.x + spawner->accel.x;
+    spawner->pos.y = spawner->pos.y + spawner->accel.y;
+            
+    switch(spawner->side){
         case 1:
-            
-            Vector2 speed = { 3.0f, 0.0f };
-            pos.x = pos.x + speed.x;
-            pos.y = pos.y + speed.y;
-            
-            if (pos.x > 600.0) {
+            if (spawner->pos.x > 600.0) {
                 spawner->side++;
-                carry = pos.x - 600.0;
-                pos.x = 600.0;
-                pos.y = 200.0 + carry;
+                carry = spawner->pos.x - 600.0;
+                spawner->pos.x = 600.0;
+                spawner->pos.y = 200.0 + carry;
+                spawner->accel.x = 0.0f;
+                spawner->accel.y = 3.0f;
             }
-            
-            // hi :)
             break;
         case 2:
-            // hi :)
+            if (spawner->pos.y > 600.0) {
+                spawner->side++;
+                carry = spawner->pos.y - 600.0;
+                spawner->pos.x = 600.0 - carry;
+                spawner->pos.y = 600.0;
+                spawner->accel.x = -3.0f;
+                spawner->accel.y = 0.0f;
+            }
             break;
         case 3:
-            // hi :)
+            if (spawner->pos.x < 200.0) {
+                spawner->side++;
+                carry = 200.0 - spawner->pos.x;
+                spawner->pos.x = 200.0;
+                spawner->pos.y = 600.0 - carry;
+                spawner->accel.x = 0.0f;
+                spawner->accel.y = -3.0f;
+            }
             break;
         case 4:
-            // hi :)
+            if (spawner->pos.y < 200.0) {
+                spawner->side = 1;
+                carry = 200.0 - spawner->pos.y;
+                spawner->pos.x = 200.0 + carry;
+                spawner->pos.y = 200.0;
+                spawner->accel.x = 3.0f;
+                spawner->accel.y = 0.0f;
+            }
             break;
     }
     
-    DrawCircle(pos.x,pos.y,20,WHITE);
+    DrawCircle(spawner->pos.x,spawner->pos.y,20,WHITE); // the spawner shouldnt be drawn in final build this is for visualization
 }
 
 void updateBullets(){
