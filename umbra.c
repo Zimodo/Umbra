@@ -1,5 +1,8 @@
-#include "raylib.h"
+#include <raylib.h>
+#include <stdlib.h>
 #include <math.h>
+
+#define MAX_BULLETS 500000
 
 const int screenWidth = 800;
 const int screenHeight = 800;
@@ -22,27 +25,35 @@ struct Spawner{
     Vector2 pos;
     int side;
     Vector2 accel;
+    float spawnCooldown;
 };
 
-/*
 typedef struct Bullet {
     Vector2 position;       // Bullet position on screen
     Vector2 acceleration;   // Amount of pixels to be incremented to position every frame
     bool disabled;          // Skip processing and draw case out of screen
     Color color;            // Bullet color
 } Bullet;
-*/
+
 
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void updateEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void updateBulletSpawner(struct Spawner* spawner);
-void updateBullets();
+void updateBullets(float bullets[]);
 
 int main(){
     
     SetTargetFPS(60);
 
     InitWindow(screenWidth, screenHeight, "UMBRA");
+
+    Bullet *bullets = (Bullet *)RL_CALLOC(MAX_BULLETS, sizeof(Bullet)); // Bullets array
+    int bulletCount = 0;
+    int bulletDisabledCount = 0; // Used to calculate how many bullets are on screen
+    int bulletRadius = 10;
+    float bulletSpeed = 3.0f;
+    int bulletRows = 6;
+    Color bulletColor[2] = { RED, BLUE };
     
     struct Earth earth;
     struct Moon moon;
@@ -62,19 +73,24 @@ int main(){
     spawner.side = 1;
     spawner.accel.x = 3.0f;
     spawner.accel.y = 0.0f;
+    spawner.spawnCooldown = 5.0f;
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         updateEarthAndMoon(&earth, &moon);
-        void updateBullets();
+
+        updateBulletSpawner(&spawner); // take out of drawing phase later
+
+        updateBullets();
         
         BeginDrawing();
         
             ClearBackground(BLACK);
             drawEarthAndMoon(&earth, &moon); // pass by reference using pointers
             
-            updateBulletSpawner(&spawner); // take out of drawing phase later
+            
+            
 
         EndDrawing();
     }
@@ -137,7 +153,6 @@ void updateEarthAndMoon(struct Earth* earth, struct Moon* moon){
     moon->pos.y = earth->pos.y + sin(moon->theta)*moon->orbit;
 }
 
-
 void updateBulletSpawner(struct Spawner* spawner){
     
     float carry;
@@ -188,11 +203,75 @@ void updateBulletSpawner(struct Spawner* spawner){
             break;
     }
     
-    DrawCircle(spawner->pos.x,spawner->pos.y,20,WHITE); // the spawner shouldnt be drawn in final build this is for visualization
+    //DrawCircle(spawner->pos.x,spawner->pos.y,20,WHITE); // the spawner shouldnt be drawn in final build this is for visualization
 }
 
 void updateBullets(){
-    
+
+    // Update
+    //----------------------------------------------------------------------------------
+    // Reset the bullet index
+    // New bullets will replace the old ones that are already disabled due to out-of-screen
+    if (bulletCount >= MAX_BULLETS)
+    {
+        bulletCount = 0;
+        bulletDisabledCount = 0;
+    }
+
+    spawnCooldownTimer--;
+    if (spawnCooldownTimer < 0)
+    {
+        spawnCooldownTimer = spawnCooldown;
+
+        // Spawn bullets
+        float degreesPerRow = 360.0f/bulletRows;
+        for (int row = 0; row < bulletRows; row++)
+        {
+            if (bulletCount < MAX_BULLETS)
+            {
+                bullets[bulletCount].position = (Vector2){(float) screenWidth/2, (float) screenHeight/2};
+                bullets[bulletCount].disabled = false;
+                bullets[bulletCount].color = bulletColor[row%2];
+
+                float bulletDirection = baseDirection + (degreesPerRow*row);
+
+                // Bullet speed*bullet direction, this will determine how much pixels will be incremented/decremented
+                // from the bullet position every frame. Since the bullets doesn't change its direction and speed,
+                // only need to calculate it at the spawning time
+                // 0 degrees = right, 90 degrees = down, 180 degrees = left and 270 degrees = up, basically clockwise
+                // Case you want it to be anti-clockwise, add "* -1" at the y acceleration
+                bullets[bulletCount].acceleration = (Vector2){
+                    bulletSpeed*cosf(bulletDirection*DEG2RAD),
+                    bulletSpeed*sinf(bulletDirection*DEG2RAD)
+                };
+
+                bulletCount++;
+            }
+        }
+
+        baseDirection += angleIncrement;
+    }
+
+    // Update bullets position based on its acceleration
+    for (int i = 0; i < bulletCount; i++)
+    {
+        // Only update bullet if inside the screen
+        if (!bullets[i].disabled)
+        {
+            bullets[i].position.x += bullets[i].acceleration.x;
+            bullets[i].position.y += bullets[i].acceleration.y;
+
+            // Disable bullet if out of screen
+            if ((bullets[i].position.x < -bulletRadius*2) ||
+                (bullets[i].position.x > screenWidth + bulletRadius*2) ||
+                (bullets[i].position.y < -bulletRadius*2) ||
+                (bullets[i].position.y > screenHeight + bulletRadius*2))
+            {
+                bullets[i].disabled = true;
+                bulletDisabledCount++;
+            }
+        }
+    }    
 }
 
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){

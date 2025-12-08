@@ -1,0 +1,72 @@
+umbra.c: In function 'main':
+umbra.c:86:9: error: too few arguments to function 'updateBullets'
+   86 |         updateBullets();
+      |         ^~~~~~~~~~~~~
+umbra.c:43:6: note: declared here
+   43 | void updateBullets(float bullets[]);
+      |      ^~~~~~~~~~~~~
+umbra.c:57:11: warning: unused variable 'bulletColor' [-Wunused-variable]
+   57 |     Color bulletColor[2] = { RED, BLUE };
+      |           ^~~~~~~~~~~
+umbra.c:56:9: warning: unused variable 'bulletRows' [-Wunused-variable]
+   56 |     int bulletRows = 6;
+      |         ^~~~~~~~~~
+umbra.c:55:11: warning: unused variable 'bulletSpeed' [-Wunused-variable]
+   55 |     float bulletSpeed = 3.0f;
+      |           ^~~~~~~~~~~
+umbra.c:54:9: warning: unused variable 'bulletRadius' [-Wunused-variable]
+   54 |     int bulletRadius = 10;
+      |         ^~~~~~~~~~~~
+umbra.c:53:9: warning: unused variable 'bulletDisabledCount' [-Wunused-variable]
+   53 |     int bulletDisabledCount = 0; // Used to calculate how many bullets are on screen
+      |         ^~~~~~~~~~~~~~~~~~~
+umbra.c:52:9: warning: unused variable 'bulletCount' [-Wunused-variable]
+   52 |     int bulletCount = 0;
+      |         ^~~~~~~~~~~
+umbra.c:51:13: warning: unused variable 'bullets' [-Wunused-variable]
+   51 |     Bullet *bullets = (Bullet *)RL_CALLOC(MAX_BULLETS, sizeof(Bullet)); // Bullets array
+      |             ^~~~~~~
+umbra.c: In function 'updateBullets':
+umbra.c:210:1: error: number of arguments doesn't match prototype
+  210 | void updateBullets(){
+      | ^~~~
+umbra.c:43:6: error: prototype declaration
+   43 | void updateBullets(float bullets[]);
+      |      ^~~~~~~~~~~~~
+umbra.c:216:9: error: 'bulletCount' undeclared (first use in this function)
+  216 |     if (bulletCount >= MAX_BULLETS)
+      |         ^~~~~~~~~~~
+umbra.c:216:9: note: each undeclared identifier is reported only once for each function it appears in
+umbra.c:219:9: error: 'bulletDisabledCount' undeclared (first use in this function)
+  219 |         bulletDisabledCount = 0;
+      |         ^~~~~~~~~~~~~~~~~~~
+umbra.c:222:5: error: 'spawnCooldownTimer' undeclared (first use in this function)
+  222 |     spawnCooldownTimer--;
+      |     ^~~~~~~~~~~~~~~~~~
+umbra.c:225:30: error: 'spawnCooldown' undeclared (first use in this function)
+  225 |         spawnCooldownTimer = spawnCooldown;
+      |                              ^~~~~~~~~~~~~
+umbra.c:228:38: error: 'bulletRows' undeclared (first use in this function)
+  228 |         float degreesPerRow = 360.0f/bulletRows;
+      |                                      ^~~~~~~~~~
+umbra.c:233:17: error: 'bullets' undeclared (first use in this function); did you mean 'Bullet'?
+  233 |                 bullets[bulletCount].position = (Vector2){(float) screenWidth/2, (float) screenHeight/2};
+      |                 ^~~~~~~
+      |                 Bullet
+umbra.c:235:46: error: 'bulletColor' undeclared (first use in this function); did you mean 'GetColor'?
+  235 |                 bullets[bulletCount].color = bulletColor[row%2];
+      |                                              ^~~~~~~~~~~
+      |                                              GetColor
+umbra.c:237:41: error: 'baseDirection' undeclared (first use in this function); did you mean 'bulletDirection'?
+  237 |                 float bulletDirection = baseDirection + (degreesPerRow*row);
+      |                                         ^~~~~~~~~~~~~
+      |                                         bulletDirection
+umbra.c:245:21: error: 'bulletSpeed' undeclared (first use in this function)
+  245 |                     bulletSpeed*cosf(bulletDirection*DEG2RAD),
+      |                     ^~~~~~~~~~~
+umbra.c:253:26: error: 'angleIncrement' undeclared (first use in this function)
+  253 |         baseDirection += angleIncrement;
+      |                          ^~~~~~~~~~~~~~
+umbra.c:266:43: error: 'bulletRadius' undeclared (first use in this function)
+  266 |             if ((bullets[i].position.x < -bulletRadius*2) ||
+      |                                           ^~~~~~~~~~~~
