@@ -43,6 +43,7 @@ void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void updateEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void updateBulletSpawner(struct Spawner* spawner);
 void updateBullets(Bullet bullets[], struct Spawner* spawner);
+void drawBullets(Bullet bullets[]);
 
 int main(){
     
@@ -95,8 +96,7 @@ int main(){
             ClearBackground(BLACK);
             drawEarthAndMoon(&earth, &moon); // pass by reference using pointers
             
-            
-            
+            drawBullets(bullets);
 
         EndDrawing();
     }
@@ -311,4 +311,26 @@ void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
     // Draw Moon
     Vector2 moonPosVector = {moon->pos.x, moon->pos.y};
     DrawCircleV(moonPosVector, moon->radius, GRAY);
+}
+
+void drawBullets(Bullet bullets[]){
+    // setting this to some random number, gonna have to replace this later with the actual value
+    int bulletCount = 500;\
+    
+    // Draw bullets using pre-rendered texture containing circle
+    for (int i = 0; i < bulletCount; i++)
+    {
+        // Do not draw disabled bullets (out of screen)
+        if (!bullets[i].disabled)
+        {
+            /*
+            DrawTexture(bulletTexture.texture,
+                (int)(bullets[i].position.x - bulletTexture.texture.width*0.5f),
+                (int)(bullets[i].position.y - bulletTexture.texture.height*0.5f),
+                bullets[i].color);
+            */
+            
+            DrawCircle(bullets[i].position.x, bullets[i].position.y, 5, RED);
+        }
+    }
 }
