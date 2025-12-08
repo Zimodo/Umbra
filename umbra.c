@@ -26,6 +26,9 @@ struct Spawner{
     int side;
     Vector2 accel;
     float spawnCooldown;
+    float spawnCooldownTimer;
+    float baseDirection;
+    int angleIncrement;
 };
 
 typedef struct Bullet {
@@ -39,7 +42,7 @@ typedef struct Bullet {
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void updateEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void updateBulletSpawner(struct Spawner* spawner);
-void updateBullets(float bullets[]);
+void updateBullets(Bullet bullets[], struct Spawner* spawner);
 
 int main(){
     
@@ -48,12 +51,15 @@ int main(){
     InitWindow(screenWidth, screenHeight, "UMBRA");
 
     Bullet *bullets = (Bullet *)RL_CALLOC(MAX_BULLETS, sizeof(Bullet)); // Bullets array
+    
+    /*
     int bulletCount = 0;
     int bulletDisabledCount = 0; // Used to calculate how many bullets are on screen
     int bulletRadius = 10;
     float bulletSpeed = 3.0f;
     int bulletRows = 6;
     Color bulletColor[2] = { RED, BLUE };
+    */
     
     struct Earth earth;
     struct Moon moon;
@@ -82,7 +88,7 @@ int main(){
 
         updateBulletSpawner(&spawner); // take out of drawing phase later
 
-        updateBullets();
+        updateBullets(bullets, &spawner);
         
         BeginDrawing();
         
@@ -206,8 +212,16 @@ void updateBulletSpawner(struct Spawner* spawner){
     //DrawCircle(spawner->pos.x,spawner->pos.y,20,WHITE); // the spawner shouldnt be drawn in final build this is for visualization
 }
 
-void updateBullets(){
+void updateBullets(Bullet bullets[], struct Spawner* spawner){
 
+    //this is gonna reset every frame i just want to see if it would work if i passed everything in
+    int bulletCount = 0;
+    int bulletDisabledCount = 0; // Used to calculate how many bullets are on screen
+    int bulletRadius = 10;
+    float bulletSpeed = 3.0f;
+    int bulletRows = 6;
+    Color bulletColor[2] = { RED, BLUE };
+    
     // Update
     //----------------------------------------------------------------------------------
     // Reset the bullet index
@@ -218,10 +232,10 @@ void updateBullets(){
         bulletDisabledCount = 0;
     }
 
-    spawnCooldownTimer--;
-    if (spawnCooldownTimer < 0)
+    spawner->spawnCooldownTimer--;
+    if (spawner->spawnCooldownTimer < 0)
     {
-        spawnCooldownTimer = spawnCooldown;
+        spawner->spawnCooldownTimer = spawner->spawnCooldown;
 
         // Spawn bullets
         float degreesPerRow = 360.0f/bulletRows;
@@ -233,7 +247,7 @@ void updateBullets(){
                 bullets[bulletCount].disabled = false;
                 bullets[bulletCount].color = bulletColor[row%2];
 
-                float bulletDirection = baseDirection + (degreesPerRow*row);
+                float bulletDirection = spawner->baseDirection + (degreesPerRow*row);
 
                 // Bullet speed*bullet direction, this will determine how much pixels will be incremented/decremented
                 // from the bullet position every frame. Since the bullets doesn't change its direction and speed,
@@ -249,7 +263,7 @@ void updateBullets(){
             }
         }
 
-        baseDirection += angleIncrement;
+        spawner->baseDirection += spawner->angleIncrement;
     }
 
     // Update bullets position based on its acceleration
