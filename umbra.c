@@ -29,6 +29,7 @@ struct Spawner{
     float spawnCooldownTimer;
     float baseDirection;
     int angleIncrement;
+    int border;
 };
 
 typedef struct Bullet {
@@ -90,14 +91,15 @@ int main(){
     spawner.side = 1;
     spawner.accel.x = 3.0f;
     spawner.accel.y = 0.0f;
-    spawner.spawnCooldown = 5.0f;
+    spawner.spawnCooldown = 1.0f;
+    spawner.border = 200;
     
     // Init BulletData
     bulletData.bulletCount = 0;
     bulletData.bulletDisabledCount = 0; // Used to calculate how many bullets are on screen
     bulletData.bulletRadius = 10;
-    bulletData.bulletSpeed = 3.0f;
-    bulletData.bulletRows = 6;
+    bulletData.bulletSpeed = 4.0f;
+    bulletData.bulletRows = 10;
     bulletData.bulletColor = RED;
     
     // Main game loop
