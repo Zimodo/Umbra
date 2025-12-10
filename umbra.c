@@ -38,12 +38,20 @@ typedef struct Bullet {
     Color color;            // Bullet color
 } Bullet;
 
+struct BulletData {
+    int bulletCount;
+    int bulletDisabledCount; // Used to calculate how many bullets are on screen
+    int bulletRadius;
+    float bulletSpeed;
+    int bulletRows;
+    Color bulletColor;
+};
 
 void updateEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void updateBulletSpawner(struct Spawner* spawner);
-void updateBullets(Bullet bullets[], struct Spawner* spawner);
+void updateBullets(Bullet bullets[], struct BulletData* bulletdata, struct Spawner* spawner);
 void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
-void drawBullets(Bullet bullets[]);
+void drawBullets(Bullet bullets[], struct BulletData* bulletdata);
 void drawBulletSpawner(struct Spawner* spawner);
 
 int main(){
@@ -66,7 +74,8 @@ int main(){
     struct Earth earth;
     struct Moon moon;
     struct Spawner spawner;
-
+    struct BulletData bulletData;
+    
     // Init Earth and Moon
     earth.pos.x = screenWidth/2;
     earth.pos.y = screenHeight/2;
@@ -83,21 +92,27 @@ int main(){
     spawner.accel.y = 0.0f;
     spawner.spawnCooldown = 5.0f;
     
+    // Init BulletData
+    bulletData.bulletCount = 0;
+    bulletData.bulletDisabledCount = 0; // Used to calculate how many bullets are on screen
+    bulletData.bulletRadius = 10;
+    bulletData.bulletSpeed = 3.0f;
+    bulletData.bulletRows = 6;
+    bulletData.bulletColor = RED;
+    
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         updateEarthAndMoon(&earth, &moon);
-
         updateBulletSpawner(&spawner);
-
-        updateBullets(bullets, &spawner);
+        updateBullets(bullets, &bulletData, &spawner);
         
         BeginDrawing();
         
             ClearBackground(BLACK);
             drawEarthAndMoon(&earth, &moon); // pass by reference using pointers
             drawBulletSpawner(&spawner);
-            drawBullets(bullets);
+            drawBullets(bullets, &bulletData);
             
         EndDrawing();
     }
@@ -213,8 +228,9 @@ void updateBulletSpawner(struct Spawner* spawner){
     //DrawCircle(spawner->pos.x,spawner->pos.y,20,WHITE); // the spawner shouldnt be drawn in final build this is for visualization
 }
 
-void updateBullets(Bullet bullets[], struct Spawner* spawner){
+void updateBullets(Bullet bullets[], struct BulletData* bulletData, struct Spawner* spawner){
 
+    /*
     //this is gonna reset every frame i just want to see if it would work if i passed everything in
     int bulletCount = 0;
     int bulletDisabledCount = 0; // Used to calculate how many bullets are on screen
@@ -222,15 +238,16 @@ void updateBullets(Bullet bullets[], struct Spawner* spawner){
     float bulletSpeed = 3.0f;
     int bulletRows = 6;
     Color bulletColor[2] = { RED, BLUE };
+    */
     
     // Update
     //----------------------------------------------------------------------------------
     // Reset the bullet index
     // New bullets will replace the old ones that are already disabled due to out-of-screen
-    if (bulletCount >= MAX_BULLETS)
+    if (bulletData->bulletCount >= MAX_BULLETS)
     {
-        bulletCount = 0;
-        bulletDisabledCount = 0;
+        bulletData->bulletCount = 0;
+        bulletData->bulletDisabledCount = 0;
     }
 
     spawner->spawnCooldownTimer--;
@@ -239,14 +256,14 @@ void updateBullets(Bullet bullets[], struct Spawner* spawner){
         spawner->spawnCooldownTimer = spawner->spawnCooldown;
 
         // Spawn bullets
-        float degreesPerRow = 360.0f/bulletRows;
-        for (int row = 0; row < bulletRows; row++)
+        float degreesPerRow = 360.0f/bulletData->bulletRows;
+        for (int row = 0; row < bulletData->bulletRows; row++)
         {
-            if (bulletCount < MAX_BULLETS)
+            if (bulletData->bulletCount < MAX_BULLETS)
             {
-                bullets[bulletCount].position = (Vector2){(float) spawner->pos.x, (float) spawner->pos.y};
-                bullets[bulletCount].disabled = false;
-                bullets[bulletCount].color = bulletColor[row%2];
+                bullets[bulletData->bulletCount].position = (Vector2){(float) spawner->pos.x, (float) spawner->pos.y};
+                bullets[bulletData->bulletCount].disabled = false;
+                bullets[bulletData->bulletCount].color = bulletData->bulletColor;
 
                 float bulletDirection = spawner->baseDirection + (degreesPerRow*row);
 
@@ -255,12 +272,12 @@ void updateBullets(Bullet bullets[], struct Spawner* spawner){
                 // only need to calculate it at the spawning time
                 // 0 degrees = right, 90 degrees = down, 180 degrees = left and 270 degrees = up, basically clockwise
                 // Case you want it to be anti-clockwise, add "* -1" at the y acceleration
-                bullets[bulletCount].acceleration = (Vector2){
-                    bulletSpeed*cosf(bulletDirection*DEG2RAD),
-                    bulletSpeed*sinf(bulletDirection*DEG2RAD)
+                bullets[bulletData->bulletCount].acceleration = (Vector2){
+                    bulletData->bulletSpeed*cosf(bulletDirection*DEG2RAD),
+                    bulletData->bulletSpeed*sinf(bulletDirection*DEG2RAD)
                 };
 
-                bulletCount++;
+                bulletData->bulletCount++;
             }
         }
 
@@ -268,7 +285,7 @@ void updateBullets(Bullet bullets[], struct Spawner* spawner){
     }
 
     // Update bullets position based on its acceleration
-    for (int i = 0; i < bulletCount; i++)
+    for (int i = 0; i < bulletData->bulletCount; i++)
     {
         // Only update bullet if inside the screen
         if (!bullets[i].disabled)
@@ -277,13 +294,13 @@ void updateBullets(Bullet bullets[], struct Spawner* spawner){
             bullets[i].position.y += bullets[i].acceleration.y;
 
             // Disable bullet if out of screen
-            if ((bullets[i].position.x < -bulletRadius*2) ||
-                (bullets[i].position.x > screenWidth + bulletRadius*2) ||
-                (bullets[i].position.y < -bulletRadius*2) ||
-                (bullets[i].position.y > screenHeight + bulletRadius*2))
+            if ((bullets[i].position.x < -bulletData->bulletRadius*2) ||
+                (bullets[i].position.x > screenWidth + bulletData->bulletRadius*2) ||
+                (bullets[i].position.y < -bulletData->bulletRadius*2) ||
+                (bullets[i].position.y > screenHeight + bulletData->bulletRadius*2))
             {
                 bullets[i].disabled = true;
-                bulletDisabledCount++;
+                bulletData->bulletDisabledCount++;
             }
         }
     }    
@@ -317,12 +334,12 @@ void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
 void drawBulletSpawner(struct Spawner* spawner){
     DrawCircle(spawner->pos.x,spawner->pos.y,20,WHITE);
 }
-void drawBullets(Bullet bullets[]){
+void drawBullets(Bullet bullets[], struct BulletData* bulletData){
     // setting this to some random number, gonna have to replace this later with the actual value
-    int bulletCount = 500;\
+    // int bulletCount = 500;
     
     // Draw bullets using pre-rendered texture containing circle
-    for (int i = 0; i < bulletCount; i++)
+    for (int i = 0; i < bulletData->bulletCount; i++)
     {
         // Do not draw disabled bullets (out of screen)
         if (!bullets[i].disabled)
