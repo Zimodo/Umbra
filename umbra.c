@@ -39,11 +39,12 @@ typedef struct Bullet {
 } Bullet;
 
 
-void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void updateEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void updateBulletSpawner(struct Spawner* spawner);
 void updateBullets(Bullet bullets[], struct Spawner* spawner);
+void drawEarthAndMoon(struct Earth* earth, struct Moon* moon);
 void drawBullets(Bullet bullets[]);
+void drawBulletSpawner(struct Spawner* spawner);
 
 int main(){
     
@@ -87,7 +88,7 @@ int main(){
     {
         updateEarthAndMoon(&earth, &moon);
 
-        updateBulletSpawner(&spawner); // take out of drawing phase later
+        updateBulletSpawner(&spawner);
 
         updateBullets(bullets, &spawner);
         
@@ -95,9 +96,9 @@ int main(){
         
             ClearBackground(BLACK);
             drawEarthAndMoon(&earth, &moon); // pass by reference using pointers
-            
+            drawBulletSpawner(&spawner);
             drawBullets(bullets);
-
+            
         EndDrawing();
     }
 
@@ -243,7 +244,7 @@ void updateBullets(Bullet bullets[], struct Spawner* spawner){
         {
             if (bulletCount < MAX_BULLETS)
             {
-                bullets[bulletCount].position = (Vector2){(float) screenWidth/2, (float) screenHeight/2};
+                bullets[bulletCount].position = (Vector2){(float) spawner->pos.x, (float) spawner->pos.y};
                 bullets[bulletCount].disabled = false;
                 bullets[bulletCount].color = bulletColor[row%2];
 
@@ -313,6 +314,9 @@ void drawEarthAndMoon(struct Earth* earth, struct Moon* moon){
     DrawCircleV(moonPosVector, moon->radius, GRAY);
 }
 
+void drawBulletSpawner(struct Spawner* spawner){
+    DrawCircle(spawner->pos.x,spawner->pos.y,20,WHITE);
+}
 void drawBullets(Bullet bullets[]){
     // setting this to some random number, gonna have to replace this later with the actual value
     int bulletCount = 500;\
